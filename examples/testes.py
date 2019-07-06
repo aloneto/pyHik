@@ -1,21 +1,6 @@
-"""
-Sample program for hikvision api.
-"""
-
 import logging
 import pyhik.hikvision as hikvision
 import datetime
-line = 0
-lineMov = 0
-
-logging.basicConfig(filename='out.log', filemode='w', level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-
-_LOGGING = logging.getLogger(__name__)
-
-debug = False
-
-dateStart = datetime.datetime.now()
 
 
 class HikCamObject(object):
@@ -36,13 +21,10 @@ class HikCamObject(object):
         self._event_states = self.cam.current_event_states
         self._id = self.cam.get_id
 
-        print('Sistema iniciado com sucesso: {}'.format(self._name))
-
-        if debug is True:
-            print('NAME: {}'.format(self._name))
-            print('ID: {}'.format(self._id))
-            print('{}'.format(self._event_states))
-            print('Motion Dectect State: {}'.format(self.motion))
+        print('NAME: {}'.format(self._name))
+        print('ID: {}'.format(self._id))
+        print('{}'.format(self._event_states))
+        print('Motion Dectect State: {}'.format(self.motion))
 
     @property
     def sensors(self):
@@ -102,54 +84,25 @@ class HikSensor(object):
         return self._sensor_state()
 
     def update_callback(self, msg):
-        global lineMov
-        lineMov +=1
-        #""" get updates. """
-        # print('Callback: {}'.format(msg))
+        """ get updates. """
+        print('Callback: {}'.format(msg))
 
-        # print('{}:{} @ {}'.format(self.name, self._sensor_state(), self._sensor_last_update()))
-
-        if debug is True:
-            print("name", self._name)
-            print("sensor_state", self._sensor_state())
-            print("sensor", self._sensor)
-            print("sensor_last_update", self._sensor_last_update())
-            print("canal", self._channel)
-
-        if self._sensor == 'Line Crossing' and self._channel is 3 and self._sensor_state() is True:
-            global line
-            line += 1
-            print("Atençao cruzamento de linha detectado !!!!!!!!!!!!!!!!!!!!!!!")
-            print("foi cruzado a linha na camera {} por {} vezes desde {}".format(self._channel, line, dateStart))
-
-            _LOGGING.debug("cruzamento de linha detectado na camera ")
-        elif self._sensor == 'Motion' and self._sensor_state() is True:
-            _LOGGING.debug("movimento detectado na camera: ")
-
-
-        # print(datetime.datetime.now())
-        # horario = datetime.datetime.now()
-        # print ("diferenca tempo:",horario - self._sensor_last_update())
+        print('{}:{} @ {}'.format(self.name, self._sensor_state(), self._sensor_last_update()))
+        print(datetime.datetime.now())
+        horario = datetime.datetime.now()
+        print ("diferenca tempo:",horario - self._sensor_last_update())
 
 
 def main():
     """Main function"""
     cam = HikCamObject('http://192.168.15.42', 80, 'admin', 'Esiexata2017')
 
-    entities = []
 
-    for sensor, channel_list in cam.sensors.items():
-        for channel in channel_list:
-            entities.append(HikSensor(sensor, channel[1], cam))
-            # if sensor == 'Video Loss':
-            #    print ("video loss")
 
-            # elif sensor == 'Motion':
-            #    print ("motion detectado")
 
-            # elif sensor == 'Line Crossing':
-            #    print ("Atençao cruzamento de linha detectado !!!!!!!!!!!!!!!!!!!!!!!")
-            #    _LOGGING.debug("cruzamento de linha detectado na camera ")
 
 
 main()
+
+
+

@@ -5,6 +5,16 @@ Sample program for hikvision api.
 import logging
 import pyhik.hikvision as hikvision
 import datetime
+import shutil
+import requests
+
+dvr1 = '192.168.15.42'
+urlBase= '/ISAPI/Streaming/channels/'
+streamType ='01'
+parameter = '/picture?snapShotImageType=JPEG'
+login = 'admin'
+passwd = 'Esiexata2017'
+
 line = 0
 lineMov = 0
 
@@ -101,10 +111,12 @@ class HikSensor(object):
         """Return true if sensor is on."""
         return self._sensor_state()
 
+
+
     def update_callback(self, msg):
         global lineMov
-        lineMov +=1
-        #""" get updates. """
+        lineMov += 1
+        # """ get updates. """
         # print('Callback: {}'.format(msg))
 
         # print('{}:{} @ {}'.format(self.name, self._sensor_state(), self._sensor_last_update()))
@@ -121,16 +133,28 @@ class HikSensor(object):
             line += 1
             print("Atençao cruzamento de linha detectado !!!!!!!!!!!!!!!!!!!!!!!")
             print("foi cruzado a linha na camera {} por {} vezes desde {}".format(self._channel, line, dateStart))
-
             _LOGGING.debug("cruzamento de linha detectado na camera ")
+            save_Snapshot(self,self._sensor,dvr1, login, passwd, self._channel)
+
         elif self._sensor == 'Motion' and self._sensor_state() is True:
             _LOGGING.debug("movimento detectado na camera: ")
+            print("movimento detectado ##########################")
+            save_Snapshot(self,self._sensor, dvr1, login, passwd, self._channel)
 
 
         # print(datetime.datetime.now())
         # horario = datetime.datetime.now()
         # print ("diferenca tempo:",horario - self._sensor_last_update())
 
+
+def save_Snapshot(self,name,dvr, login, passwd, ch):
+    url ='http://{}{}{}{}{}'.format(dvr,urlBase,ch,streamType,parameter)
+    #print (url)
+    response = requests.get(url, auth=(login, passwd), stream=True)
+    datetimenow = datetime.datetime.now()
+    with open('imgs/{}-CH-{}-{}.png'.format(name, self._channel,datetimenow), 'wb') as out_file:
+        shutil.copyfileobj(response.raw, out_file)
+    del response
 
 def main():
     """Main function"""
@@ -141,15 +165,6 @@ def main():
     for sensor, channel_list in cam.sensors.items():
         for channel in channel_list:
             entities.append(HikSensor(sensor, channel[1], cam))
-            # if sensor == 'Video Loss':
-            #    print ("video loss")
-
-            # elif sensor == 'Motion':
-            #    print ("motion detectado")
-
-            # elif sensor == 'Line Crossing':
-            #    print ("Atençao cruzamento de linha detectado !!!!!!!!!!!!!!!!!!!!!!!")
-            #    _LOGGING.debug("cruzamento de linha detectado na camera ")
 
 
 main()
